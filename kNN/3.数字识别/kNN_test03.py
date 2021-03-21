@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import numpy as np
 import operator
+import os
 from os import listdir
 
 """
@@ -86,8 +87,13 @@ Modify:
 def handwritingClassTest():
 	#测试集的Labels
 	hwLabels = []
+	# 打印当前目录
+	base_dir = os.path.dirname(__file__)
+	# 获取当前文件目录
+	path = os.path.join(base_dir, 'trainingDigits')
+	print('当前工作目录 :' + path)
 	#返回trainingDigits目录下的文件名
-	trainingFileList = listdir('trainingDigits')
+	trainingFileList = listdir(path)
 	#返回文件夹下文件的个数
 	m = len(trainingFileList)
 	#初始化训练的Mat矩阵,测试集
@@ -101,9 +107,10 @@ def handwritingClassTest():
 		#将获得的类别添加到hwLabels中
 		hwLabels.append(classNumber)
 		#将每一个文件的1x1024数据存储到trainingMat矩阵中
-		trainingMat[i,:] = img2vector('trainingDigits/%s' % (fileNameStr))
+		trainingMat[i,:] = img2vector(os.path.join(path, fileNameStr))
 	#返回testDigits目录下的文件名
-	testFileList = listdir('testDigits')
+	testPath = os.path.join(base_dir, 'testDigits')
+	testFileList = listdir(testPath)
 	#错误检测计数
 	errorCount = 0.0
 	#测试数据的数量
@@ -115,7 +122,7 @@ def handwritingClassTest():
 		#获得分类的数字
 		classNumber = int(fileNameStr.split('_')[0])
 		#获得测试集的1x1024向量,用于训练
-		vectorUnderTest = img2vector('testDigits/%s' % (fileNameStr))
+		vectorUnderTest = img2vector(os.path.join(testPath, fileNameStr))
 		#获得预测结果
 		classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 3)
 		print("分类返回结果为%d\t真实结果为%d" % (classifierResult, classNumber))
