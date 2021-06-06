@@ -22,6 +22,7 @@ def classify0(inX, dataSet, labels, k):
 	#numpy函数shape[0]返回dataSet的行数
 	dataSetSize = dataSet.shape[0]
 	#在列向量方向上重复inX共1次(横向),行向量方向上重复inX共dataSetSize次(纵向)
+	#复制出dataSetSize个数组 X轴复制1=不复制
 	diffMat = np.tile(inX, (dataSetSize, 1)) - dataSet
 	#二维特征相减后平方
 	sqDiffMat = diffMat**2
@@ -45,7 +46,7 @@ def classify0(inX, dataSet, labels, k):
 	#reverse降序排序字典
 	sortedClassCount = sorted(classCount.items(),key=operator.itemgetter(1),reverse=True)
 	#返回次数最多的类别,即所要分类的类别
-	return sortedClassCount[0][0]
+	return sortedClassCount
 
 """
 函数说明:将32x32的二进制图像转换为1x1024向量。
@@ -108,6 +109,7 @@ def handwritingClassTest():
 		hwLabels.append(classNumber)
 		#将每一个文件的1x1024数据存储到trainingMat矩阵中
 		trainingMat[i,:] = img2vector(os.path.join(path, fileNameStr))
+
 	#返回testDigits目录下的文件名
 	testPath = os.path.join(base_dir, 'testDigits')
 	testFileList = listdir(testPath)
@@ -124,9 +126,9 @@ def handwritingClassTest():
 		#获得测试集的1x1024向量,用于训练
 		vectorUnderTest = img2vector(os.path.join(testPath, fileNameStr))
 		#获得预测结果
-		classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 3)
-		print("分类返回结果为%d\t真实结果为%d" % (classifierResult, classNumber))
-		if(classifierResult != classNumber):
+		classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 1)
+		if(classifierResult[0][0] != classNumber):
+			print("分类返回结果为%s\t真实结果为%s" % (str(classifierResult), fileNameStr))
 			errorCount += 1.0
 	print("总共错了%d个数据\n错误率为%f%%" % (errorCount, errorCount/mTest))
 
