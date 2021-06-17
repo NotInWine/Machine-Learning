@@ -130,7 +130,7 @@ def handwritingClassTest():
 		if(classifierResult[0][0] != classNumber):
 			print("分类返回结果为%s\t真实结果为%s" % (str(classifierResult), fileNameStr))
 			errorCount += 1.0
-	print("总共错了%d个数据\n错误率为%f%%" % (errorCount, errorCount/mTest))
+	print("总共错了%d个数据\n准确率为%f%%" % (errorCount, (1 - errorCount/mTest) * 100))
 
 
 """
