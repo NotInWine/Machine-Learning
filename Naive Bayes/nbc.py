@@ -49,13 +49,13 @@ def TextProcessing(folder_path, test_size = 0.2):
 			class_list.append(folder)							#添加数据集类别
 			j += 1
 
-	data_class_list = list(zip(data_list, class_list))			#zip压缩合并，将数据与标签对应压缩
+	data_class_list = list(zip(data_list, class_list))			#zip合并，将数据与标签对应合并。与压缩无关 https://www.runoob.com/python/python-func-zip.html
 	random.shuffle(data_class_list)								#将data_class_list乱序
 	index = int(len(data_class_list) * test_size) + 1			#训练集和测试集切分的索引值
 	train_list = data_class_list[index:]						#训练集
 	test_list = data_class_list[:index]							#测试集
-	train_data_list, train_class_list = zip(*train_list)		#训练集解压缩
-	test_data_list, test_class_list = zip(*test_list)			#测试集解压缩
+	train_data_list, train_class_list = zip(*train_list)		#训练集分裂
+	test_data_list, test_class_list = zip(*test_list)			#测试集分裂
 
 	all_words_dict = {}											#统计训练集词频
 	for word_list in train_data_list:
@@ -173,11 +173,12 @@ def TextClassifier(train_feature_list, test_feature_list, train_class_list, test
 
 if __name__ == '__main__':
 	#文本预处理
-	folder_path = './SogouC/Sample'				#训练集存放地址
+	folder_path = os.path.join(os.path.dirname(__file__), 'SogouC/Sample')				
+	#训练集存放地址
 	all_words_list, train_data_list, test_data_list, train_class_list, test_class_list = TextProcessing(folder_path, test_size=0.2)
 
 	# 生成stopwords_set
-	stopwords_file = './stopwords_cn.txt'
+	stopwords_file = os.path.join(os.path.dirname(__file__), 'stopwords_cn.txt')
 	stopwords_set = MakeWordsSet(stopwords_file)
 
 
