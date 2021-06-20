@@ -25,7 +25,9 @@ Modify:
 	2017-08-22
 """
 def TextProcessing(folder_path, test_size = 0.2):
-	folder_list = os.listdir(folder_path)						#查看folder_path下的文件
+	base_dir = os.path.dirname(__file__)
+	folder_path = os.path.join(base_dir, folder_path)
+	folder_list =  os.listdir(folder_path)						#查看folder_path下的文件
 	data_list = []												#数据集数据
 	class_list = []												#数据集类别
 
@@ -86,7 +88,9 @@ Modify:
 	2017-08-22
 """
 def MakeWordsSet(words_file):
-	words_set = set()											#创建set集合
+	words_set = set()		
+	base_dir = os.path.dirname(__file__)
+	words_file = os.path.join(base_dir, words_file)			#创建set集合
 	with open(words_file, 'r', encoding = 'utf-8') as f:		#打开文件
 		for line in f.readlines():								#一行一行读取
 			word = line.strip()									#去回车
@@ -112,9 +116,9 @@ Modify:
 	2017-08-22
 """
 def TextFeatures(train_data_list, test_data_list, feature_words):
-	def text_features(text, feature_words):						#出现在特征集中，则置1												
+	def text_features(text, feature_words):											
 		text_words = set(text)
-		features = [1 if word in text_words else 0 for word in feature_words]
+		features = [1 if word in text_words else 0 for word in feature_words] #出现在特征集中，则置1	
 		return features
 	train_feature_list = [text_features(text, feature_words) for text in train_data_list]
 	test_feature_list = [text_features(text, feature_words) for text in test_data_list]
@@ -140,11 +144,11 @@ Modify:
 def words_dict(all_words_list, deleteN, stopwords_set = set()):
 	feature_words = []							#特征列表
 	n = 1
-	for t in range(deleteN, len(all_words_list), 1):
+	for t in range(deleteN, len(all_words_list), 1): # 这里有个BUG!!!! 应该先过滤在跳过deleteN个出现频率最高的词
 		if n > 1000:							#feature_words的维度为1000
 			break								
 		#如果这个词不是数字，并且不是指定的结束语，并且单词长度大于1小于5，那么这个词就可以作为特征词
-		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set and 1 < len(all_words_list[t]) < 5:
+		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set and 1 < len(all_words_list[t]) < 5: # 这里有个BUG!!!! 应该先过滤在跳过deleteN个出现频率最高的词
 			feature_words.append(all_words_list[t])
 		n += 1
 	return feature_words
@@ -169,11 +173,14 @@ Modify:
 def TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list):
 	classifier = MultinomialNB().fit(train_feature_list, train_class_list)
 	test_accuracy = classifier.score(test_feature_list, test_class_list)
+	v = classifier.predict(test_feature_list)
+	print(v)
 	return test_accuracy
 
 if __name__ == '__main__':
 	#文本预处理
-	folder_path = './SogouC/Sample'				#训练集存放地址
+	folder_path = 'SogouC\\Sample'				#训练集存放地址
+	# 全量词典(按出现频率排序后)，特征集，测试集，特征集分类，测试分类
 	all_words_list, train_data_list, test_data_list, train_class_list, test_class_list = TextProcessing(folder_path, test_size=0.2)
 
 	# 生成stopwords_set
@@ -182,10 +189,10 @@ if __name__ == '__main__':
 
 
 	test_accuracy_list = []
-	deleteNs = range(0, 1000, 20)				#0 20 40 60 ... 980
+	deleteNs = range(0, 1000, 20)				#0 20 40 60 ... 980， 要跳过前多少的词，从零开始 每次跳跃20个 直到 1000
 	for deleteN in deleteNs:
-		feature_words = words_dict(all_words_list, deleteN, stopwords_set)
-		train_feature_list, test_feature_list = TextFeatures(train_data_list, test_data_list, feature_words)
+		feature_words = words_dict(all_words_list, deleteN, stopwords_set)  # 过滤出特征集合
+		train_feature_list, test_feature_list = TextFeatures(train_data_list, test_data_list, feature_words) # 特征集
 		test_accuracy = TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list)
 		test_accuracy_list.append(test_accuracy)
 
@@ -194,7 +201,7 @@ if __name__ == '__main__':
 
 	plt.figure()
 	plt.plot(deleteNs, test_accuracy_list)
-	plt.title('Relationship of deleteNs and test_accuracy')
-	plt.xlabel('deleteNs')
-	plt.ylabel('test_accuracy')
+	plt.title('Out Top-n and accuracy')
+	plt.xlabel('Out Top-n')
+	plt.ylabel('Accuracy')
 	plt.show()
