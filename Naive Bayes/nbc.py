@@ -35,7 +35,7 @@ def TextProcessing(folder_path, test_size = 0.2):
 	for folder in folder_list:
 		new_folder_path = os.path.join(folder_path, folder)		#根据子文件夹，生成新的路径
 		files = os.listdir(new_folder_path)						#存放子文件夹下的txt文件的列表
-		
+
 		j = 1
 		#遍历每个txt文件
 		for file in files:
@@ -43,10 +43,10 @@ def TextProcessing(folder_path, test_size = 0.2):
 				break
 			with open(os.path.join(new_folder_path, file), 'r', encoding = 'utf-8') as f:	#打开txt文件
 				raw = f.read()
-			
+
 			word_cut = jieba.cut(raw, cut_all = False)			#精简模式，返回一个可迭代的generator
 			word_list = list(word_cut)							#generator转换为list
-			
+
 			data_list.append(word_list)							#添加数据集数据
 			class_list.append(folder)							#添加数据集类别
 			j += 1
@@ -66,7 +66,7 @@ def TextProcessing(folder_path, test_size = 0.2):
 				all_words_dict[word] += 1
 			else:
 				all_words_dict[word] = 1
-	
+
 	#根据键的值倒序排序
 	all_words_tuple_list = sorted(all_words_dict.items(), key = lambda f:f[1], reverse = True)
 	all_words_list, all_words_nums = zip(*all_words_tuple_list)	#解压缩
@@ -88,14 +88,14 @@ Modify:
 	2017-08-22
 """
 def MakeWordsSet(words_file):
-	words_set = set()		
+	words_set = set()
 	base_dir = os.path.dirname(__file__)
 	words_file = os.path.join(base_dir, words_file)			#创建set集合
 	with open(words_file, 'r', encoding = 'utf-8') as f:		#打开文件
 		for line in f.readlines():								#一行一行读取
 			word = line.strip()									#去回车
 			if len(word) > 0:									#有文本，则添加到words_set中
-				words_set.add(word)								
+				words_set.add(word)
 	return words_set 											#返回处理结果
 
 """
@@ -116,9 +116,9 @@ Modify:
 	2017-08-22
 """
 def TextFeatures(train_data_list, test_data_list, feature_words):
-	def text_features(text, feature_words):											
+	def text_features(text, feature_words):
 		text_words = set(text)
-		features = [1 if word in text_words else 0 for word in feature_words] #出现在特征集中，则置1	
+		features = [1 if word in text_words else 0 for word in feature_words] #出现在特征集中，则置1
 		return features
 	train_feature_list = [text_features(text, feature_words) for text in train_data_list]
 	test_feature_list = [text_features(text, feature_words) for text in test_data_list]
@@ -146,7 +146,7 @@ def words_dict(all_words_list, deleteN, stopwords_set = set()):
 	n = 1
 	for t in range(deleteN, len(all_words_list), 1): # 这里有个BUG!!!! 应该先过滤在跳过deleteN个出现频率最高的词
 		if n > 1000:							#feature_words的维度为1000
-			break								
+			break
 		#如果这个词不是数字，并且不是指定的结束语，并且单词长度大于1小于5，那么这个词就可以作为特征词
 		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set and 1 < len(all_words_list[t]) < 5: # 这里有个BUG!!!! 应该先过滤在跳过deleteN个出现频率最高的词
 			feature_words.append(all_words_list[t])
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 	all_words_list, train_data_list, test_data_list, train_class_list, test_class_list = TextProcessing(folder_path, test_size=0.2)
 
 	# 生成stopwords_set
-	stopwords_file = './stopwords_cn.txt'
+	stopwords_file = os.path.join(os.path.dirname(__file__), 'stopwords_cn.txt')
 	stopwords_set = MakeWordsSet(stopwords_file)
 
 
