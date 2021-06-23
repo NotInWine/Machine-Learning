@@ -1,15 +1,8 @@
 # -*- coding: UTF-8 -*-
-# 多项式朴素贝叶斯
 from sklearn.naive_bayes import MultinomialNB
-# 优化版多项式朴素贝叶斯
-from sklearn.naive_bayes import ComplementNB
-# 图形工具
 import matplotlib.pyplot as plt
-# 系统库
 import os
-# 随机数库
 import random
-# 中文分词器
 import jieba
 
 """
@@ -32,30 +25,30 @@ Modify:
 	2017-08-22
 """
 def TextProcessing(folder_path, test_size = 0.2):
-	base_dir = os.path.dirname(__file__)						# 当前目录
-	folder_path = os.path.join(base_dir, folder_path)			# 链接获取绝对目录
-	folder_list =  os.listdir(folder_path)						# 查看folder_path下的文件
-	data_list = []												# 数据集数据
-	class_list = []												# 数据集类别
+	base_dir = os.path.dirname(__file__)
+	folder_path = os.path.join(base_dir, folder_path)
+	folder_list =  os.listdir(folder_path)						#查看folder_path下的文件
+	data_list = []												#数据集数据
+	class_list = []												#数据集类别
 
 	#遍历每个子文件夹
 	for folder in folder_list:
-		new_folder_path = os.path.join(folder_path, folder)		# 根据子文件夹，生成新的路径
-		files = os.listdir(new_folder_path)						# 获取文件夹下的文件列表：存放子文件夹下的txt文件的列表
+		new_folder_path = os.path.join(folder_path, folder)		#根据子文件夹，生成新的路径
+		files = os.listdir(new_folder_path)						#存放子文件夹下的txt文件的列表
 
 		j = 1
 		#遍历每个txt文件
 		for file in files:
-			if j > 100:											# 每类txt样本数最多100个，效率问题
+			if j > 100:											#每类txt样本数最多100个
 				break
-			with open(os.path.join(new_folder_path, file), 'r', encoding = 'utf-8') as f:
-				raw = f.read()									# 打开txt文件 读到字符
+			with open(os.path.join(new_folder_path, file), 'r', encoding = 'utf-8') as f:	#打开txt文件
+				raw = f.read()
 
-			word_cut = jieba.cut(raw, cut_all = False)			# 精简模式分词，返回一个可迭代的generator
-			word_list = list(word_cut)							# generator转换为list， 这个是我们要操作的分词后的集合
+			word_cut = jieba.cut(raw, cut_all = False)			#精简模式，返回一个可迭代的generator
+			word_list = list(word_cut)							#generator转换为list
 
-			data_list.append(word_list)							# 添加数据集数据
-			class_list.append(folder)							# 添加数据集类别
+			data_list.append(word_list)							#添加数据集数据
+			class_list.append(folder)							#添加数据集类别
 			j += 1
 
 	data_class_list = list(zip(data_list, class_list))			#zip压缩合并，将数据与标签对应压缩
@@ -193,16 +186,11 @@ def TextClassifier(train_feature_list, test_feature_list, train_class_list, test
 	# print(v)
 	return test_accuracy
 
-def TextClassifier1(train_feature_list, test_feature_list, train_class_list, test_class_list):
-	classifier = ComplementNB().fit(train_feature_list, train_class_list)
-	test_accuracy = classifier.score(test_feature_list, test_class_list)
-	# v = classifier.predict_proba(test_feature_list)
-	# print(v)
-	return test_accuracy
-
 if __name__ == '__main__':
 	#文本预处理
 	folder_path = 'SogouC\\Sample'				#训练集存放地址
+	# 全量词典(按出现频率排序后)，特征集，测试集，特征集分类，测试分类
+	all_words_list, train_data_list, test_data_list, train_class_list, test_class_list = TextProcessing(folder_path, test_size=0.15)
 
 	# 生成stopwords_set
 	stopwords_file = os.path.join(os.path.dirname(__file__), 'stopwords_cn.txt')
@@ -211,27 +199,22 @@ if __name__ == '__main__':
 
 	test_accuracy_list = []
 	test_accuracy_list1 = []
-	test_accuracy_list2 = []
-	run = range(0, 150, 1)				#0 20 40 60 ... 980， 要跳过前多少的词，从零开始 每次跳跃20个 直到 1000
-	for r in run:
-		# 全量词典(按出现频率排序后)，特征集，测试集，特征集分类，测试分类
-		all_words_list, train_data_list, test_data_list, train_class_list, test_class_list = TextProcessing(folder_path, 0.15)
-		# 跳过前n个
-		deleteN = 630
+	deleteNs = range(0, 1000, 10)				#0 20 40 60 ... 980， 要跳过前多少的词，从零开始 每次跳跃20个 直到 1000
+	for deleteN in deleteNs:
 		feature_words = words_dict(all_words_list, deleteN, stopwords_set)  # 过滤后的特征集
 		train_feature_list, test_feature_list = TextFeatures(train_data_list, test_data_list, feature_words) # 根据过滤后的特征集把 测试集和特征集 坐标化
-		test_accuracy_list.append(TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list))
-		test_accuracy_list2.append(TextClassifier1(train_feature_list, test_feature_list, train_class_list, test_class_list))
+		test_accuracy = TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list) # 计算准去率
+		test_accuracy_list.append(test_accuracy)
 
 		train_feature_list1, test_feature_list1 = TextFeatures1(train_data_list, test_data_list, feature_words) # 根据过滤后的特征集把 测试集和特征集 坐标化
-		test_accuracy_list1.append(TextClassifier(train_feature_list1, test_feature_list1, train_class_list, test_class_list))
+		test_accuracy1 = TextClassifier(train_feature_list1, test_feature_list1, train_class_list, test_class_list) # 计算准去率
+		test_accuracy_list1.append(test_accuracy1)
 
 	# ave = lambda c: sum(c) / len(c)
 	# print(ave(test_accuracy_list))
 
-	plt.plot(run, test_accuracy_list, color='b', label='add', linestyle='--')
-	plt.plot(run, test_accuracy_list1, color='r', label='one', linestyle='--')
-	plt.plot(run, test_accuracy_list2, color='k', label='super', linestyle='--')
+	plt.plot(deleteNs, test_accuracy_list, color='skyblue', label='new')
+	plt.plot(deleteNs, test_accuracy_list1, color='red', label='old')
 	plt.title('Out Top-n and accuracy')
 	plt.xlabel('Out Top-n')
 	plt.ylabel('Accuracy')
