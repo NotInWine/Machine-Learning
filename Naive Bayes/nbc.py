@@ -58,15 +58,15 @@ def TextProcessing(folder_path, test_size = 0.2):
 			class_list.append(folder)							# 添加数据集类别
 			j += 1
 
-	data_class_list = list(zip(data_list, class_list))			#zip压缩合并，将数据与标签对应压缩
-	random.shuffle(data_class_list)								#将data_class_list乱序
-	index = int(len(data_class_list) * test_size) + 1			#训练集和测试集切分的索引值
-	train_list = data_class_list[index:]						#训练集
-	test_list = data_class_list[:index]							#测试集
-	train_data_list, train_class_list = zip(*train_list)		#训练集解压缩
-	test_data_list, test_class_list = zip(*test_list)			#测试集解压缩
+	data_class_list = list(zip(data_list, class_list))			# zip打包合并，将数据与标签链接 [1, 2, 3] [a, b, c] 链接： [[1, a], [2, b], [3, c]]
+	random.shuffle(data_class_list)								# 将data_class_list乱序
+	index = int(len(data_class_list) * test_size) + 1			# 训练集和测试集切分的索引值 + 1 (最少是一个)
+	train_list = data_class_list[index:]						# 训练集
+	test_list = data_class_list[:index]							# 测试集
+	train_data_list, train_class_list = zip(*train_list)		# 训练集 断开链接
+	test_data_list, test_class_list = zip(*test_list)			# 测试集 断开链接
 
-	all_words_dict = {}											#统计训练集词频
+	all_words_dict = {}											# 统计训练集词频 {'词':'出现次数'}
 	for word_list in train_data_list:
 		for word in word_list:
 			if word in all_words_dict.keys():
@@ -74,11 +74,22 @@ def TextProcessing(folder_path, test_size = 0.2):
 			else:
 				all_words_dict[word] = 1
 
-	#根据键的值倒序排序
-	all_words_tuple_list = sorted(all_words_dict.items(), key = lambda f:f[1], reverse = True)
-	all_words_list, all_words_nums = zip(*all_words_tuple_list)	#解压缩
-	all_words_list = list(all_words_list)						#转换成列表
-	return all_words_list, train_data_list, test_data_list, train_class_list, test_class_list
+
+	all_words_tuple_list = sorted(								# 按照频率排序	
+			all_words_dict.items(),
+			key = lambda f:f[1],
+			reverse = True
+		)
+	all_words_list, all_words_nums = zip(*all_words_tuple_list)	# 断开链接
+	all_words_list = list(all_words_list)						# 转换成列表
+
+	return (
+		all_words_list,											# 词汇列表按频率排序后的集合
+	 	train_data_list,
+	  	test_data_list,
+	   	train_class_list,
+		test_class_list
+		)
 
 """
 函数说明:读取文件里的内容，并去重
