@@ -118,6 +118,15 @@ Modify:
 def TextFeatures(train_data_list, test_data_list, feature_words):
 	def text_features(text, feature_words):
 		text_words = set(text)
+		features = [text.count(word) if word in text_words else 0 for word in feature_words] #出现在特征集中，则置1
+		return features
+	train_feature_list = [text_features(text, feature_words) for text in train_data_list]
+	test_feature_list = [text_features(text, feature_words) for text in test_data_list]
+	return train_feature_list, test_feature_list				#返回结果
+
+def TextFeatures1(train_data_list, test_data_list, feature_words):
+	def text_features(text, feature_words):
+		text_words = set(text)
 		features = [1 if word in text_words else 0 for word in feature_words] #出现在特征集中，则置1
 		return features
 	train_feature_list = [text_features(text, feature_words) for text in train_data_list]
@@ -173,8 +182,8 @@ Modify:
 def TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list):
 	classifier = MultinomialNB().fit(train_feature_list, train_class_list)
 	test_accuracy = classifier.score(test_feature_list, test_class_list)
-	v = classifier.predict(test_feature_list)
-	print(v)
+	# v = classifier.predict_proba(test_feature_list)
+	# print(v)
 	return test_accuracy
 
 if __name__ == '__main__':
@@ -189,19 +198,25 @@ if __name__ == '__main__':
 
 
 	test_accuracy_list = []
+	test_accuracy_list1 = []
 	deleteNs = range(0, 1000, 20)				#0 20 40 60 ... 980， 要跳过前多少的词，从零开始 每次跳跃20个 直到 1000
 	for deleteN in deleteNs:
-		feature_words = words_dict(all_words_list, deleteN, stopwords_set)  # 过滤出特征集合
-		train_feature_list, test_feature_list = TextFeatures(train_data_list, test_data_list, feature_words) # 特征集
-		test_accuracy = TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list)
+		feature_words = words_dict(all_words_list, deleteN, stopwords_set)  # 过滤后的特征集
+		train_feature_list, test_feature_list = TextFeatures(train_data_list, test_data_list, feature_words) # 根据过滤后的特征集把 测试集和特征集 坐标化
+		test_accuracy = TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list) # 计算准去率
 		test_accuracy_list.append(test_accuracy)
+
+		train_feature_list1, test_feature_list1 = TextFeatures1(train_data_list, test_data_list, feature_words) # 根据过滤后的特征集把 测试集和特征集 坐标化
+		test_accuracy1 = TextClassifier(train_feature_list1, test_feature_list1, train_class_list, test_class_list) # 计算准去率
+		test_accuracy_list1.append(test_accuracy1)
 
 	# ave = lambda c: sum(c) / len(c)
 	# print(ave(test_accuracy_list))
 
-	plt.figure()
-	plt.plot(deleteNs, test_accuracy_list)
+	plt.plot(deleteNs, test_accuracy_list, color='skyblue', label='new')
+	plt.plot(deleteNs, test_accuracy_list1, color='red', label='old')
 	plt.title('Out Top-n and accuracy')
 	plt.xlabel('Out Top-n')
 	plt.ylabel('Accuracy')
+	plt.legend() # 显示图例
 	plt.show()
