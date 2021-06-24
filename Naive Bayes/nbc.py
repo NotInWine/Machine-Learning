@@ -32,41 +32,48 @@ Modify:
 	2017-08-22
 """
 def TextProcessing(folder_path, test_size = 0.2):
-	base_dir = os.path.dirname(__file__)						# 当前目录
-	folder_path = os.path.join(base_dir, folder_path)			# 链接获取绝对目录
-	folder_list =  os.listdir(folder_path)						# 查看folder_path下的文件
-	data_list = []												# 数据集数据
-	class_list = []												# 数据集类别
+	base_dir = os.path.dirname(__file__)
+	folder_path = os.path.join(base_dir, folder_path)										# 拼接相对路径
+	folder_list =  os.listdir(folder_path)													# 拿到文件列表
+	data_list = []																			# 数据集数据
+	class_list = []																			# 数据集类别
 
-	#遍历每个子文件夹
-	for folder in folder_list:
-		new_folder_path = os.path.join(folder_path, folder)		# 根据子文件夹，生成新的路径
-		files = os.listdir(new_folder_path)						# 获取文件夹下的文件列表：存放子文件夹下的txt文件的列表
+	test_number = {} 																		# 测试集合数量 分类:分类下的测试集合数量							
+	for folder in folder_list:																# 遍历每个子文件夹
+		new_folder_path = os.path.join(folder_path, folder)									# 根据子文件夹，生成新的路径
+		files = os.listdir(new_folder_path)													# 存放子文件夹下的txt文件的列表
 
-		j = 1
-		#遍历每个txt文件
-		for file in files:
-			if j > 100:											# 每类txt样本数最多100个，效率问题
-				break
-			with open(os.path.join(new_folder_path, file), 'r', encoding = 'utf-8') as f:
-				raw = f.read()									# 打开txt文件 读到字符
+		test_number[folder] = int(len(files) * test_size) + 1								# 计算每个分类下的测试集数量
+		for file in files:																	# 遍历文件
+			with open(
+					os.path.join(new_folder_path, file),
+				 	'r',
+				  	encoding = 'utf-8'
+				  ) as f:
+				raw = f.read()																# 打开读取os内容
+									
+			word_cut = jieba.cut(raw, cut_all = False)										# 精简模式，返回一个可迭代的generator
+			word_list = list(word_cut)														# generator转换为list
+									
+			data_list.append(word_list)														# 添加数据集数据
+			class_list.append(folder)														# 添加数据集类别
+									
+	data_class_list = list(zip(data_list, class_list))										# zip压缩合并，将数据与标签对应压缩
+	random.shuffle(data_class_list)															# 将data_class_list乱序
 
-			word_cut = jieba.cut(raw, cut_all = False)			# 精简模式分词，返回一个可迭代的generator
-			word_list = list(word_cut)							# generator转换为list， 这个是我们要操作的分词后的集合
+	train_list = []																			# 开始填充测试集和训练集
+	test_list = []
+	for data in data_class_list:
+		if test_number[data[1]] > 0:														# 该分类下还有测试集未填充
+			test_list.append(data)
+			test_number[data[1]] = test_number[data[1]] - 1 
+		else :
+			train_list.append(data)
 
-			data_list.append(word_list)							# 添加数据集数据
-			class_list.append(folder)							# 添加数据集类别
-			j += 1
-
-	data_class_list = list(zip(data_list, class_list))			# zip打包合并，将数据与标签链接 [1, 2, 3] [a, b, c] 链接： [[1, a], [2, b], [3, c]]
-	random.shuffle(data_class_list)								# 将data_class_list乱序
-	index = int(len(data_class_list) * test_size) + 1			# 训练集和测试集切分的索引值 + 1 (最少是一个)
-	train_list = data_class_list[index:]						# 训练集
-	test_list = data_class_list[:index]							# 测试集
-	train_data_list, train_class_list = zip(*train_list)		# 训练集 断开链接
-	test_data_list, test_class_list = zip(*test_list)			# 测试集 断开链接
-
-	all_words_dict = {}											# 统计训练集词频 {'词':'出现次数'}
+	train_data_list, train_class_list = zip(*train_list)									# 训练集解压缩
+	test_data_list, test_class_list = zip(*test_list)										# 测试集解压缩
+									
+	all_words_dict = {}																		# 统计训练集词频
 	for word_list in train_data_list:
 		for word in word_list:
 			if word in all_words_dict.keys():
@@ -74,22 +81,12 @@ def TextProcessing(folder_path, test_size = 0.2):
 			else:
 				all_words_dict[word] = 1
 
-
-	all_words_tuple_list = sorted(								# 按照频率排序	
-			all_words_dict.items(),
-			key = lambda f:f[1],
-			reverse = True
-		)
-	all_words_list, all_words_nums = zip(*all_words_tuple_list)	# 断开链接
-	all_words_list = list(all_words_list)						# 转换成列表
-
-	return (
-		all_words_list,											# 词汇列表按频率排序后的集合
-	 	train_data_list,
-	  	test_data_list,
-	   	train_class_list,
-		test_class_list
-		)
+	all_words_tuple_list = sorted(
+			all_words_dict.items(),key = lambda f:f[1],reverse = True
+		)																					# 根据键的值倒序排序
+	all_words_list, all_words_nums = zip(*all_words_tuple_list)								# 解压缩
+	all_words_list = list(all_words_list)													# 转换成列表
+	return all_words_list, train_data_list, test_data_list, train_class_list, test_class_list
 
 """
 函数说明:读取文件里的内容，并去重
@@ -172,7 +169,7 @@ def words_dict(all_words_list, deleteN, stopwords_set = set()):
 	feature_words = []							#特征列表
 	n = 1
 	for t in range(deleteN, len(all_words_list), 1): # 这里有个BUG!!!! 应该先过滤在跳过deleteN个出现频率最高的词
-		if n > 1000:							#feature_words的维度为1000
+		if n > 2000:							#feature_words的维度为1000
 			break
 		#如果这个词不是数字，并且不是指定的结束语，并且单词长度大于1小于5，那么这个词就可以作为特征词
 		if not all_words_list[t].isdigit() and all_words_list[t] not in stopwords_set and 1 < len(all_words_list[t]) < 5: # 这里有个BUG!!!! 应该先过滤在跳过deleteN个出现频率最高的词
@@ -226,9 +223,9 @@ if __name__ == '__main__':
 	run = range(0, 150, 1)				#0 20 40 60 ... 980， 要跳过前多少的词，从零开始 每次跳跃20个 直到 1000
 	for r in run:
 		# 全量词典(按出现频率排序后)，特征集，测试集，特征集分类，测试分类
-		all_words_list, train_data_list, test_data_list, train_class_list, test_class_list = TextProcessing(folder_path, 0.15)
+		all_words_list, train_data_list, test_data_list, train_class_list, test_class_list = TextProcessing(folder_path, 0.01)
 		# 跳过前n个
-		deleteN = 630
+		deleteN = 700
 		feature_words = words_dict(all_words_list, deleteN, stopwords_set)  # 过滤后的特征集
 		train_feature_list, test_feature_list = TextFeatures(train_data_list, test_data_list, feature_words) # 根据过滤后的特征集把 测试集和特征集 坐标化
 		test_accuracy_list.append(TextClassifier(train_feature_list, test_feature_list, train_class_list, test_class_list))
