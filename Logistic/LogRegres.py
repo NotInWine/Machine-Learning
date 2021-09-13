@@ -1,6 +1,8 @@
 # -*- coding:UTF-8 -*-
 import matplotlib.pyplot as plt
 import numpy as np
+# 系统库
+import os
 
 """
 函数说明:梯度上升算法测试函数
@@ -52,7 +54,7 @@ Modify:
 def loadDataSet():
 	dataMat = []														#创建数据列表
 	labelMat = []														#创建标签列表
-	fr = open('testSet.txt')											#打开文件	
+	fr = open(os.path.join(os.path.dirname(__file__), 'testSet.txt'))											#打开文件	
 	for line in fr.readlines():											#逐行读取
 		lineArr = line.strip().split()									#去回车，放入列表
 		dataMat.append([1.0, float(lineArr[0]), float(lineArr[1])])		#添加数据
