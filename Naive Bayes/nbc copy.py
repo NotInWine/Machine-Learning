@@ -202,7 +202,7 @@ def TextClassifier(train_feature_list, test_feature_list, train_class_list,
 	return test_accuracy
 
 if __name__ == '__main__':																	# 函数入口
-	folder_path = 'SogouC\\Sample'
+	folder_path = 'SogouC/Sample'
 
 	(all_words_list, train_data_list, test_data_list, train_class_list,
 	 	test_class_list) = TextProcessing(folder_path, test_size=0.15)   					# 全量词典(按出现频率排序后)，特征集，测试集，特征集分类，测试分类
