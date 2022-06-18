@@ -15,7 +15,7 @@ class LinearRegression:
     2. 初始化参数矩阵
     """
     def __init__(self, data, labels, polynomial_degree=0, sinusoid_degree=0, normalize_data=True) -> None:
-        (data_processed, features_mean, features_deviation) = prepare_fro_training(data, polynomial_degree, sinusoid_degree, normalize_data)
+        (data_processed, features_mean, features_deviation) = prepare_fro_training.prepare_for_training(data, polynomial_degree, sinusoid_degree, normalize_data)
         self.data = data_processed
         self.features_mean = features_mean
         self.features_deviation = features_deviation
@@ -42,7 +42,7 @@ class LinearRegression:
         cost_history = []
         for _ in range(num):
             self.gradient_setp(alpha)
-            cost_history.append(self.cost_function())
+            cost_history.append(self.cost_function(self.data, self.labels))
         return cost_history
 
 
@@ -53,7 +53,7 @@ class LinearRegression:
         1. 获取误差
         2. 更新参数
         """
-        calculation = self.calculation() - self.labels
+        calculation = LinearRegression.calculation(self.data, self.theta) - self.labels
         theta = self.theta
         self.theta = theta - (alpha / self.data.shape[1]) * np.dot(calculation.T, self.data).T
         
@@ -69,7 +69,7 @@ class LinearRegression:
         损失函数-最小二乘法
         """
         calulation = LinearRegression.calculation(data, self.theta) - labels
-        return np.dot(calulation.T, calulation) / 2
+        return (np.dot(calulation.T, calulation) / 2) [0][0]
 
     def reckon(self, data):
         """
@@ -77,11 +77,10 @@ class LinearRegression:
         1. as
         2. as
         """
-        data_processed = prepare_fro_training(data, self.polynomial_degree, self.sinusoid_degree, self.normalize_data)
-        ca =  self.calculation()
-        cost = self.cost_function()
-        return (ca, cost)
+        (data_processed, features_mean, features_deviation) = prepare_fro_training.prepare_for_training(data, self.polynomial_degree, self.sinusoid_degree, self.normalize_data)
+        ca =  self.calculation(data_processed, self.theta)
+        return ca
 
     def get_cost(self, data, labels):
-        data_processed = prepare_fro_training(data, self.polynomial_degree, self.sinusoid_degree, self.normalize_data)
+        (data_processed, features_mean, features_deviation) = prepare_fro_training.prepare_for_training(data, self.polynomial_degree, self.sinusoid_degree, self.normalize_data)
         return self.cost_function(data_processed, labels)

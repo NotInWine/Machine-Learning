@@ -1,0 +1,34 @@
+{
+    "segmentInfos": [
+        {
+            "depCity": "HLD",
+            "arrCity": "SHE",
+            "carrier": "HO",
+            "flightNo": "HO1188",
+            "seatCode": "T",
+            "depDate": "2022-06-22",
+            "depTime": "0000",
+            "routeType": "0"
+        }
+    ],
+    "passengers": [
+        {
+            "passengerName": "李旭峰",
+            "passengerType": "0",
+            "identityType": "1",
+            "identityNo": "152104197206201244",
+            "passengerMobile": "13766355370",
+            "birth": "1972-06-20"
+        },
+        {
+            "passengerName": "杨宝国",
+            "passengerType": "0",
+            "identityType": "1",
+            "identityNo": "152104196805121217",
+            "passengerMobile": "17870468355",
+            "birth": "1968-05-12"
+        }
+    ],
+    "contactMobile": "18296860606",
+    "officeID": "PEK898"
+}
