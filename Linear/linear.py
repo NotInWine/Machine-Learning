@@ -69,7 +69,9 @@ class LinearRegression:
         损失函数-最小二乘法
         """
         calulation = LinearRegression.calculation(data, self.theta) - labels
-        return (np.dot(calulation.T, calulation) / 2) [0][0]
+        #return (np.dot(calulation.T, calulation) / 2) [0][0]
+        cos = np.dot(calulation.T, calulation)
+        return cos [0][0]
 
     def reckon(self, data):
         """
