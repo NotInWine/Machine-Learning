@@ -53,9 +53,9 @@ class LinearRegression:
         1. 获取误差
         2. 更新参数
         """
-        calculation = LinearRegression.calculation(self.data, self.theta) - self.labels
+        calculation =  self.labels - LinearRegression.calculation(self.data, self.theta)
         theta = self.theta
-        self.theta = theta - (alpha / self.data.shape[1]) * np.dot(calculation.T, self.data).T
+        self.theta = theta + (alpha / self.data.shape[1]) * np.dot(self.data.T, calculation)
         
     @staticmethod
     def calculation(data, theta):

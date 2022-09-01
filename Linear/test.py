@@ -33,22 +33,20 @@ x1_data = train_data[[x1_title]].to_numpy()
 
 # 建立模型 进行学习
 linear = LinearRegression(np.hstack((x_data, x1_data)), train_data[[y_title]].to_numpy())
-cost_history, theta = linear.train(0.0001, 5000)
+cost_history, theta = linear.train(0.001, 300)
 
 print('多维度损失结果', cost_history[len(cost_history) - 1], ' 权重\n', theta)
 
-# 损失计算过程图
-index = list(range(len(cost_history)))
-
+# 检验
 cost = linear.get_cost(
      np.hstack((test_data[[x_title]].to_numpy(), test_data[[x1_title]].to_numpy())),
      test_data[[y_title]].to_numpy()
 )
 print('最终损失值 ', cost)
 
-plt.plot(index, cost_history, label="m-loss:" + str(cost_history[len(cost_history) - 1]))
-plt.legend()
-plt.show()
+# 损失过程图
+index = list(range(len(cost_history)))
+plt.plot(index, cost_history, label="0.001m-loss:" + str(cost))
 
 
 # 画预测线
@@ -137,3 +135,7 @@ plot_predictions_trace = go.Scatter3d(
 plot_data = [plot_training_trace, plot_test_trace, plot_predictions_trace]
 plot_figure = go.Figure(data=plot_data, layout=plot_layout)
 plotly.offline.plot(plot_figure)
+
+
+plt.legend()
+plt.show()
